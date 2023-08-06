@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class TileBoard : MonoBehaviour
 {
@@ -57,7 +58,23 @@ public class TileBoard : MonoBehaviour
                 MoveTiles(Vector2Int.right, grid.width - 2, -1, 0, 1);
             }
         }
+        if(Application.platform == RuntimePlatform.Android)
+        {
+            GetDragDirection(Camera.main.ScreenToWorldPoint(Input.GetTouch(0).position));
+            /*http://gamedevelopertips.com/how-detect-swipe-direction-unity/*/
+        }
 
+    }
+
+    private void LastTouchPos()
+    {
+        foreach (Touch touch in Input.touches)
+        {
+            if(touch.phase == TouchPhase.Began)
+            {
+
+            }
+        }
     }
     private void MoveTiles(Vector2Int direction, int startX, int incrementX, int startY, int incrementY)
     {
@@ -189,4 +206,42 @@ public class TileBoard : MonoBehaviour
 
         return true;
     }
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        Debug.Log("Press Poistion " + eventData.pressPosition);
+        Debug.Log("End Poistion " + eventData.position);
+        Vector3 dragVectionDirection = (eventData.position - eventData.pressPosition).normalized;
+        Debug.Log("Normalized Direction " + dragVectionDirection);
+        GetDragDirection(dragVectionDirection);
+    }
+    public void OnDrag(PointerEventData eventData)
+    {
+
+    }
+    private enum DragDirection
+    {
+        up,
+        down,
+        left,
+        right
+    }
+
+    private DragDirection GetDragDirection(Vector3 dragVector)
+    {
+        float positiveX = Mathf.Abs(dragVector.x);
+        float positiveY = Mathf.Abs(dragVector.y);
+
+        DragDirection dragDir;
+        if(positiveX > positiveY)
+        {
+            dragDir = (dragVector.x > 0) ? DragDirection.right : DragDirection.left;
+        }
+        else
+        {
+            dragDir = (dragVector.y > 0) ? DragDirection.up : DragDirection.down;
+        }
+        Debug.Log(dragDir);
+        return dragDir;
+    }
+
 }
