@@ -58,24 +58,14 @@ public class TileBoard : MonoBehaviour
                 MoveTiles(Vector2Int.right, grid.width - 2, -1, 0, 1);
             }
         }
-        if(Application.platform == RuntimePlatform.Android)
+        if (Application.platform == RuntimePlatform.Android)
         {
-            GetDragDirection(Camera.main.ScreenToWorldPoint(Input.GetTouch(0).position));
+
             /*http://gamedevelopertips.com/how-detect-swipe-direction-unity/*/
         }
 
     }
 
-    private void LastTouchPos()
-    {
-        foreach (Touch touch in Input.touches)
-        {
-            if(touch.phase == TouchPhase.Began)
-            {
-
-            }
-        }
-    }
     private void MoveTiles(Vector2Int direction, int startX, int incrementX, int startY, int incrementY)
     {
         bool changed = false;
@@ -105,7 +95,7 @@ public class TileBoard : MonoBehaviour
         {
             if (adajecent.occupied)
             {
-                if(CanMerge(tile, adajecent.tile))
+                if (CanMerge(tile, adajecent.tile))
                 {
                     Merge(tile, adajecent.tile);
                     return true;
@@ -143,7 +133,7 @@ public class TileBoard : MonoBehaviour
     {
         for (int i = 0; i < tileStates.Length; i++)
         {
-            if(state == tileStates[i])
+            if (state == tileStates[i])
             {
                 return i;
             }
@@ -162,14 +152,14 @@ public class TileBoard : MonoBehaviour
             tile.locked = false;
         }
 
-        if(tiles.Count != grid.size)
+        if (tiles.Count != grid.size)
         {
             CreateTile();
         }
         if (CheckForGameOver())
         {
             gameManager.GameOver();
-        } 
+        }
     }
 
     public bool CheckForGameOver()
@@ -186,7 +176,7 @@ public class TileBoard : MonoBehaviour
             TileCell left = grid.GetAdajecentCell(tile.cell, Vector2Int.left);
             TileCell right = grid.GetAdajecentCell(tile.cell, Vector2Int.right);
 
-            if(up != null && CanMerge(tile, up.tile))
+            if (up != null && CanMerge(tile, up.tile))
             {
                 return false;
             }
@@ -228,18 +218,25 @@ public class TileBoard : MonoBehaviour
 
     private DragDirection GetDragDirection(Vector3 dragVector)
     {
-        float positiveX = Mathf.Abs(dragVector.x);
-        float positiveY = Mathf.Abs(dragVector.y);
+        if (Application.platform == RuntimePlatform.Android)
+        {
+            float positiveX = Mathf.Abs(dragVector.x);
+            float positiveY = Mathf.Abs(dragVector.y);
+            DragDirection dragDir;
 
-        DragDirection dragDir;
-        if(positiveX > positiveY)
-        {
-            dragDir = (dragVector.x > 0) ? DragDirection.right : DragDirection.left;
+
+            if (positiveX > positiveY)
+            {
+                dragDir = (dragVector.x > 0) ? DragDirection.right : DragDirection.left;
+                dragDir = (dragVector.x > 0) ? MoveTiles(Vector2Int.right, grid.width - 2, -1, 0, 1) : MoveTiles(Vector2Int.left, 1, 1, 0, 1);
+            }
+            else
+            {
+                dragDir = (dragVector.y > 0) ? DragDirection.up : DragDirection.down;
+                dragDir = (dragVector.y > 0) ? MoveTiles(Vector2Int.up, 0, 1, 1, 1) : MoveTiles(Vector2Int.down, 0, 1, grid.height - 2, -1);
+            }
         }
-        else
-        {
-            dragDir = (dragVector.y > 0) ? DragDirection.up : DragDirection.down;
-        }
+
         Debug.Log(dragDir);
         return dragDir;
     }
