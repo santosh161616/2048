@@ -803,7 +803,7 @@ GameObject:
   - component: {fileID: 528400313}
   - component: {fileID: 528400312}
   m_Layer: 5
-  m_Name: Score
+  m_Name: ScoreLabel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3458,7 +3458,7 @@ GameObject:
   - component: {fileID: 2020533928}
   - component: {fileID: 2020533927}
   m_Layer: 5
-  m_Name: Score
+  m_Name: score
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 public class TileBoard : MonoBehaviour
 {
@@ -11,6 +10,9 @@ public class TileBoard : MonoBehaviour
     private TileGrid grid;
     private List<Tile> tiles;
     private bool waiting;
+
+    private Vector2 touchStartPos;
+    private float swipeThreshold = 100f; // Adjust this value for sensitivity
     private void Awake()
     {
         grid = GetComponentInChildren<TileGrid>();
@@ -58,15 +60,54 @@ public class TileBoard : MonoBehaviour
                 MoveTiles(Vector2Int.right, grid.width - 2, -1, 0, 1);
             }
         }
-        if (Application.platform == RuntimePlatform.Android)
-        {
 
-            /*http://gamedevelopertips.com/how-detect-swipe-direction-unity/*/
+        // ------ Mobile Touch Control ------ //
+        if (Input.touchCount > 0)
+        {
+            Touch touch = Input.GetTouch(0);
+
+            switch (touch.phase)
+            {
+                case TouchPhase.Began:
+                    touchStartPos = touch.position;
+                    break;
+
+                case TouchPhase.Ended:
+                    Vector2 touchEndPos = touch.position;
+                    Vector2 swipeDirection = touchEndPos - touchStartPos;
+
+                    if (swipeDirection.magnitude >= swipeThreshold)
+                    {
+                        float angle = Mathf.Atan2(swipeDirection.y, swipeDirection.x) * Mathf.Rad2Deg;
+
+                        if (angle < 45f && angle > -45f)
+                        {
+                            MoveTiles(Vector2Int.right, grid.width - 2, -1, 0, 1);
+                           // Debug.Log("Swipe Right");
+                        }
+                        else if (angle >= 45f && angle < 135f)
+                        {
+                            MoveTiles(Vector2Int.up, 0, 1, 1, 1);
+                           // Debug.Log("Swipe Up");
+                        }
+                        else if (angle >= 135f || angle <= -135f)
+                        {
+                            MoveTiles(Vector2Int.left, 1, 1, 0, 1);
+                           // Debug.Log("Swipe Left");
+                        }
+                        else if (angle > -135f && angle < -45f)
+                        {
+                            MoveTiles(Vector2Int.down, 0, 1, grid.height - 2, -1);
+                           // Debug.Log("Swipe Down");
+                        }
+                    }
+                    break;
+            }
         }
 
     }
 
-    private void MoveTiles(Vector2Int direction, int startX, int incrementX, int startY, int incrementY)
+    public void MoveTiles(Vector2Int direction, int startX, int incrementX, int startY, int incrementY)
     {
         bool changed = false;
 
@@ -195,50 +236,6 @@ public class TileBoard : MonoBehaviour
         }
 
         return true;
-    }
-    public void OnEndDrag(PointerEventData eventData)
-    {
-        Debug.Log("Press Poistion " + eventData.pressPosition);
-        Debug.Log("End Poistion " + eventData.position);
-        Vector3 dragVectionDirection = (eventData.position - eventData.pressPosition).normalized;
-        Debug.Log("Normalized Direction " + dragVectionDirection);
-        GetDragDirection(dragVectionDirection);
-    }
-    public void OnDrag(PointerEventData eventData)
-    {
-
-    }
-    private enum DragDirection
-    {
-        up,
-        down,
-        left,
-        right
-    }
-
-    private DragDirection GetDragDirection(Vector3 dragVector)
-    {
-        if (Application.platform == RuntimePlatform.Android)
-        {
-            float positiveX = Mathf.Abs(dragVector.x);
-            float positiveY = Mathf.Abs(dragVector.y);
-            DragDirection dragDir;
-
-
-            if (positiveX > positiveY)
-            {
-                dragDir = (dragVector.x > 0) ? DragDirection.right : DragDirection.left;
-                dragDir = (dragVector.x > 0) ? MoveTiles(Vector2Int.right, grid.width - 2, -1, 0, 1) : MoveTiles(Vector2Int.left, 1, 1, 0, 1);
-            }
-            else
-            {
-                dragDir = (dragVector.y > 0) ? DragDirection.up : DragDirection.down;
-                dragDir = (dragVector.y > 0) ? MoveTiles(Vector2Int.up, 0, 1, 1, 1) : MoveTiles(Vector2Int.down, 0, 1, grid.height - 2, -1);
-            }
-        }
-
-        Debug.Log(dragDir);
-        return dragDir;
-    }
+    }    
 
 }
